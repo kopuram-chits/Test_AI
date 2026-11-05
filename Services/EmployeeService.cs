@@ -33,6 +33,12 @@ public class EmployeeService : IEmployeeService
         }
     }
 
+    /// <summary>
+    /// Stores a copy of the employee with a newly assigned ID.
+    /// </summary>
+    /// <param name="employee">The employee to copy; its ID is ignored and the input is unchanged.</param>
+    /// <returns>An independent copy of the stored employee with its assigned ID.</returns>
+    /// <exception cref="InvalidDepartmentException">The employee's department does not exist.</exception>
     public Employee Add(Employee employee)
     {
         lock (_store.SyncRoot)
