@@ -39,11 +39,13 @@ public class EmployeeService : IEmployeeService
     /// <param name="employee">The employee to copy; its ID is ignored and the input is unchanged.</param>
     /// <returns>An independent copy of the stored employee with its assigned ID.</returns>
     /// <exception cref="InvalidDepartmentException">The employee's department does not exist.</exception>
+    /// <exception cref="InvalidDesignationException">The employee's designation does not exist.</exception>
     public Employee Add(Employee employee)
     {
         lock (_store.SyncRoot)
         {
             ValidateDepartment(employee.DeptId);
+            ValidateDesignation(employee.DesignationId);
             var newEmployee = Clone(employee);
             newEmployee.Id = _store.NextEmployeeId++;
             _store.Employees.Add(newEmployee);
@@ -51,6 +53,15 @@ public class EmployeeService : IEmployeeService
         }
     }
 
+    /// <summary>
+    /// Updates an existing employee after validating both references, leaving stored data unchanged if validation fails.
+    /// </summary>
+    /// <param name="id">The stored employee ID to update.</param>
+    /// <param name="employee">The replacement field values; its ID is ignored and the input is unchanged.</param>
+    /// <returns>An independent copy of the updated employee, or <see langword="null"/> if the ID is not found.</returns>
+    /// <remarks>A missing employee returns before reference validation. Validation and writes share the store lock.</remarks>
+    /// <exception cref="InvalidDepartmentException">The employee exists but the specified department does not.</exception>
+    /// <exception cref="InvalidDesignationException">The employee and department exist but the specified designation does not.</exception>
     public Employee? Update(int id, Employee employee)
     {
         lock (_store.SyncRoot)
@@ -60,7 +71,9 @@ public class EmployeeService : IEmployeeService
                 return null;
 
             ValidateDepartment(employee.DeptId);
+            ValidateDesignation(employee.DesignationId);
             existing.DeptId = employee.DeptId;
+            existing.DesignationId = employee.DesignationId;
             existing.Name = employee.Name;
             existing.Salary = employee.Salary;
             existing.DOB = employee.DOB;
@@ -73,11 +86,11 @@ public class EmployeeService : IEmployeeService
     {
         lock (_store.SyncRoot)
         {
-            var employee = _store.Employees.FirstOrDefault(e => e.Id == id);
-            if (employee is null)
+            var index = _store.Employees.FindIndex(employee => employee.Id == id);
+            if (index < 0)
                 return false;
 
-            _store.Employees.Remove(employee);
+            _store.Employees.RemoveAt(index);
             return true;
         }
     }
@@ -89,12 +102,20 @@ public class EmployeeService : IEmployeeService
             throw new InvalidDepartmentException();
     }
 
+    // Called only while the shared store lock is held.
+    private void ValidateDesignation(int designationId)
+    {
+        if (!_store.Designations.Any(d => d.DesignationId == designationId))
+            throw new InvalidDesignationException();
+    }
+
     private static Employee Clone(Employee employee) => new()
     {
         Id = employee.Id,
         Name = employee.Name,
         Salary = employee.Salary,
         DOB = employee.DOB,
-        DeptId = employee.DeptId
+        DeptId = employee.DeptId,
+        DesignationId = employee.DesignationId
     };
 }

@@ -11,6 +11,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<EmployeeDataStore>();
 builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
 builder.Services.AddSingleton<IDepartmentService, DepartmentService>();
+builder.Services.AddSingleton<IDesignationService, DesignationService>();
 
 var app = builder.Build();
 

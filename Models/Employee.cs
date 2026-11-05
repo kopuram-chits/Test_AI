@@ -17,4 +17,7 @@ public class Employee
 
     [Range(1, int.MaxValue)]
     public int DeptId { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int DesignationId { get; set; }
 }

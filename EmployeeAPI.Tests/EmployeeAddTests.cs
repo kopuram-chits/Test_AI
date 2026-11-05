@@ -13,6 +13,7 @@ public class EmployeeAddTests
         var before = service.GetAll();
         var input = new Employee
         {
+            DesignationId = 1,
             Id = -123,
             Name = "New employee",
             DeptId = 2,
@@ -32,6 +33,7 @@ public class EmployeeAddTests
         {
             Assert.Equal("New employee", added.Name);
             Assert.Equal(2, added.DeptId);
+            Assert.Equal(1, added.DesignationId);
             Assert.Equal(12345.67m, added.Salary);
             Assert.Equal(new DateTime(1990, 2, 3), added.DOB);
             Assert.Equal(added.Id, service.GetById(added.Id)!.Id);
@@ -46,6 +48,7 @@ public class EmployeeAddTests
         var service = new EmployeeService(new EmployeeDataStore());
         var input = new Employee
         {
+            DesignationId = 1,
             Name = "Original",
             DeptId = 1,
             Salary = 500m,
@@ -58,6 +61,7 @@ public class EmployeeAddTests
         target.Id = -1;
         target.Name = "Changed";
         target.DeptId = 2;
+        target.DesignationId = 2;
         target.Salary = 0m;
         target.DOB = DateTime.MinValue;
 
@@ -66,6 +70,7 @@ public class EmployeeAddTests
         Assert.Equal(assignedId, stored!.Id);
         Assert.Equal("Original", stored.Name);
         Assert.Equal(1, stored.DeptId);
+        Assert.Equal(1, stored.DesignationId);
         Assert.Equal(500m, stored.Salary);
         Assert.Equal(new DateTime(1990, 1, 1), stored.DOB);
     }
@@ -77,16 +82,16 @@ public class EmployeeAddTests
     public void Add_UnknownDepartment_DoesNotStoreEmployeeOrConsumeId(int deptId)
     {
         var service = new EmployeeService(new EmployeeDataStore());
-        var first = service.Add(new Employee { Name = "Before", DeptId = 1 });
+        var first = service.Add(new Employee { DesignationId = 1, Name = "Before", DeptId = 1 });
         var count = service.GetAll().Count;
-        var invalid = new Employee { Id = -123, Name = "Rejected", DeptId = deptId };
+        var invalid = new Employee { DesignationId = 1, Id = -123, Name = "Rejected", DeptId = deptId };
 
         Assert.Throws<InvalidDepartmentException>(() => service.Add(invalid));
 
         Assert.Equal(count, service.GetAll().Count);
         Assert.Equal(-123, invalid.Id);
         Assert.DoesNotContain(service.GetAll(), employee => employee.Name == "Rejected");
-        var next = service.Add(new Employee { Name = "After", DeptId = 1 });
+        var next = service.Add(new Employee { DesignationId = 1, Name = "After", DeptId = 1 });
         Assert.Equal(first.Id + 1, next.Id);
     }
 }

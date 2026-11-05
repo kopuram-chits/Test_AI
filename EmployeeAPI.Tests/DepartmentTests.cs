@@ -85,7 +85,7 @@ public class DepartmentTests
     [InlineData(-1)]
     public void EmployeeDepartmentId_MustBePositive(int deptId)
     {
-        var employee = new Employee { Name = "Test", DeptId = deptId };
+        var employee = new Employee { DesignationId = 1, Name = "Test", DeptId = deptId };
         Assert.False(Validator.TryValidateObject(employee, new ValidationContext(employee), new List<ValidationResult>(), true));
     }
 
@@ -98,7 +98,7 @@ public class DepartmentTests
         var employees = new EmployeeService(new EmployeeDataStore());
         var before = employees.GetById(1)!;
         var count = employees.GetAll().Count;
-        var invalid = new Employee { Name = "Changed", DeptId = deptId };
+        var invalid = new Employee { DesignationId = 1, Name = "Changed", DeptId = deptId };
         Assert.Throws<InvalidDepartmentException>(() => employees.Add(invalid));
         Assert.Throws<InvalidDepartmentException>(() => employees.Update(1, invalid));
         Assert.Equal(count, employees.GetAll().Count);
@@ -117,7 +117,7 @@ public class DepartmentTests
         var departments = new DepartmentService(store);
         var created = departments.Add(new Department { DeptName = "New department" });
         var snapshot = employees.GetById(1)!;
-        var updated = employees.Update(1, new Employee { Name = snapshot.Name, DeptId = created.DeptId })!;
+        var updated = employees.Update(1, new Employee { DesignationId = 1, Name = snapshot.Name, DeptId = created.DeptId })!;
         Assert.Equal(created.DeptId, updated.DeptId);
         Assert.Equal(created.DeptId, employees.GetAll().Single(e => e.Id == 1).DeptId);
         Assert.Equal(1, snapshot.DeptId);
@@ -142,7 +142,7 @@ public class DepartmentTests
             var add = Task.Run(() =>
             {
                 start.Wait();
-                try { employees.Add(new Employee { Name = "Concurrent", DeptId = department.DeptId }); }
+                try { employees.Add(new Employee { DesignationId = 1, Name = "Concurrent", DeptId = department.DeptId }); }
                 catch (InvalidDepartmentException) { }
             });
             var delete = Task.Run(() =>

@@ -41,6 +41,10 @@ public class EmployeeController : ControllerBase
             var created = _employeeService.Add(employee);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
+        catch (InvalidDesignationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
         catch (InvalidDepartmentException ex)
         {
             return BadRequest(new { message = ex.Message });
@@ -55,6 +59,10 @@ public class EmployeeController : ControllerBase
         {
             var updated = _employeeService.Update(id, employee);
             return updated is null ? NotFound(new { message = "Employee not found." }) : Ok(updated);
+        }
+        catch (InvalidDesignationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (InvalidDepartmentException ex)
         {

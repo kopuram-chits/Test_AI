@@ -12,6 +12,7 @@ public class EmployeeServiceTests
         var service = new EmployeeService(new EmployeeDataStore());
         var input = new Employee
         {
+            DesignationId = 1,
             DeptId = 1,
             Name = "Test Employee",
             Salary = 12345.67m,
@@ -24,6 +25,7 @@ public class EmployeeServiceTests
         Assert.NotNull(result);
         Assert.Equal(added.Id, result!.Id);
         Assert.Equal(input.DeptId, result.DeptId);
+        Assert.Equal(input.DesignationId, result.DesignationId);
         Assert.Equal(input.Name, result.Name);
         Assert.Equal(input.Salary, result.Salary);
         Assert.Equal(input.DOB, result.DOB);
@@ -47,6 +49,7 @@ public class EmployeeServiceTests
         var service = new EmployeeService(new EmployeeDataStore());
         var added = service.Add(new Employee
         {
+            DesignationId = 1,
             DeptId = 1,
             Name = "Original",
             Salary = 1500m,
@@ -76,6 +79,7 @@ public class EmployeeServiceTests
         var service = new EmployeeService(new EmployeeDataStore());
         var added = service.Add(new Employee
         {
+            DesignationId = 1,
             DeptId = 1,
             Name = "Before",
             Salary = 100m,
@@ -84,6 +88,7 @@ public class EmployeeServiceTests
         var snapshot = service.GetById(added.Id)!;
         var replacement = new Employee
         {
+            DesignationId = 1,
             DeptId = 1,
             Name = "After",
             Salary = 200m,
@@ -105,7 +110,7 @@ public class EmployeeServiceTests
     public void GetById_DeletedEmployee_ReturnsNull()
     {
         var service = new EmployeeService(new EmployeeDataStore());
-        var added = service.Add(new Employee { DeptId = 1, Name = "Temporary" });
+        var added = service.Add(new Employee { DesignationId = 1, DeptId = 1, Name = "Temporary" });
 
         Assert.True(service.Delete(added.Id));
 
