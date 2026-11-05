@@ -14,4 +14,7 @@ public class Employee
     public decimal Salary { get; set; }
 
     public DateTime DOB { get; set; }
+
+    [Range(1, int.MaxValue)]
+    public int DeptId { get; set; }
 }

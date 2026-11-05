@@ -4,52 +4,57 @@ namespace EmployeeAPI.Services;
 
 public class EmployeeService : IEmployeeService
 {
-    // Demo-only in-memory storage. Data is lost when the application stops.
-    private readonly List<Employee> _employees =
-    [
-        new Employee { Id = 1, Name = "Rahul", Salary = 30000m, DOB = new DateTime(1995, 5, 10) },
-        new Employee { Id = 2, Name = "Amit", Salary = 45000m, DOB = new DateTime(1992, 8, 15) }
-    ];
+    private readonly EmployeeDataStore _store;
 
-    private int _nextId = 3;
-    private readonly object _lock = new();
+    public EmployeeService(EmployeeDataStore store) => _store = store;
 
     public IReadOnlyList<Employee> GetAll()
     {
-        lock (_lock)
+        lock (_store.SyncRoot)
         {
-            return _employees.Select(Clone).ToList();
+            return _store.Employees.Select(Clone).ToList();
         }
     }
 
+    /// <summary>
+    /// Retrieves a copy of the employee with the specified ID.
+    /// </summary>
+    /// <param name="id">The employee ID to find.</param>
+    /// <returns>
+    /// An independent copy of the employee, or <see langword="null"/> if not found.
+    /// Changes to the returned object do not affect stored data.
+    /// </returns>
     public Employee? GetById(int id)
     {
-        lock (_lock)
+        lock (_store.SyncRoot)
         {
-            var employee = _employees.FirstOrDefault(e => e.Id == id);
+            var employee = _store.Employees.FirstOrDefault(e => e.Id == id);
             return employee is null ? null : Clone(employee);
         }
     }
 
     public Employee Add(Employee employee)
     {
-        lock (_lock)
+        lock (_store.SyncRoot)
         {
+            ValidateDepartment(employee.DeptId);
             var newEmployee = Clone(employee);
-            newEmployee.Id = _nextId++;
-            _employees.Add(newEmployee);
+            newEmployee.Id = _store.NextEmployeeId++;
+            _store.Employees.Add(newEmployee);
             return Clone(newEmployee);
         }
     }
 
     public Employee? Update(int id, Employee employee)
     {
-        lock (_lock)
+        lock (_store.SyncRoot)
         {
-            var existing = _employees.FirstOrDefault(e => e.Id == id);
+            var existing = _store.Employees.FirstOrDefault(e => e.Id == id);
             if (existing is null)
                 return null;
 
+            ValidateDepartment(employee.DeptId);
+            existing.DeptId = employee.DeptId;
             existing.Name = employee.Name;
             existing.Salary = employee.Salary;
             existing.DOB = employee.DOB;
@@ -60,15 +65,22 @@ public class EmployeeService : IEmployeeService
 
     public bool Delete(int id)
     {
-        lock (_lock)
+        lock (_store.SyncRoot)
         {
-            var employee = _employees.FirstOrDefault(e => e.Id == id);
+            var employee = _store.Employees.FirstOrDefault(e => e.Id == id);
             if (employee is null)
                 return false;
 
-            _employees.Remove(employee);
+            _store.Employees.Remove(employee);
             return true;
         }
+    }
+
+    // Called only while the shared store lock is held.
+    private void ValidateDepartment(int deptId)
+    {
+        if (!_store.Departments.Any(d => d.DeptId == deptId))
+            throw new InvalidDepartmentException();
     }
 
     private static Employee Clone(Employee employee) => new()
@@ -76,6 +88,7 @@ public class EmployeeService : IEmployeeService
         Id = employee.Id,
         Name = employee.Name,
         Salary = employee.Salary,
-        DOB = employee.DOB
+        DOB = employee.DOB,
+        DeptId = employee.DeptId
     };
 }

@@ -12,6 +12,7 @@ public class EmployeeController : ControllerBase
 
     public EmployeeController(IEmployeeService employeeService)
     {
+        int j = 90;
         _employeeService = employeeService;
     }
 
@@ -19,6 +20,7 @@ public class EmployeeController : ControllerBase
     [HttpGet]
     public ActionResult<IReadOnlyList<Employee>> GetAll()
     {
+        int j = 900;
         return Ok(_employeeService.GetAll());
     }
 
@@ -34,16 +36,30 @@ public class EmployeeController : ControllerBase
     [HttpPost]
     public ActionResult<Employee> Create([FromBody] Employee employee)
     {
-        var created = _employeeService.Add(employee);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        try
+        {
+            var created = _employeeService.Add(employee);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+        catch (InvalidDepartmentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     // PUT: api/Employee/1
     [HttpPut("{id:int}")]
     public ActionResult<Employee> Update(int id, [FromBody] Employee employee)
     {
-        var updated = _employeeService.Update(id, employee);
-        return updated is null ? NotFound(new { message = "Employee not found." }) : Ok(updated);
+        try
+        {
+            var updated = _employeeService.Update(id, employee);
+            return updated is null ? NotFound(new { message = "Employee not found." }) : Ok(updated);
+        }
+        catch (InvalidDepartmentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     // DELETE: api/Employee/1

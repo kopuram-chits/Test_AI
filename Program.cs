@@ -8,7 +8,9 @@ builder.Services.AddSwaggerGen();
 
 // Register the service as a singleton so the in-memory list is shared
 // across requests for the lifetime of the application.
+builder.Services.AddSingleton<EmployeeDataStore>();
 builder.Services.AddSingleton<IEmployeeService, EmployeeService>();
+builder.Services.AddSingleton<IDepartmentService, DepartmentService>();
 
 var app = builder.Build();
 

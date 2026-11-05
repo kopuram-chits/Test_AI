@@ -7,4 +7,9 @@
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="EmployeeAPI.Tests/**/*.cs" />
+    <Content Remove="EmployeeAPI.Tests/**" />
+    <None Remove="EmployeeAPI.Tests/**" />
+  </ItemGroup>
 </Project>
